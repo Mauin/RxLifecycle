@@ -1,9 +1,10 @@
 package com.trello.rxlifecycle;
 
-import rx.Observable;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 /**
  * Common base interface for activity and fragment lifecycle providers.
@@ -22,10 +23,10 @@ public interface LifecycleProvider<E> {
     /**
      * Binds a source until a specific event occurs.
      * <p>
-     * Intended for use with {@link Observable#compose(Observable.Transformer)}
+     * Intended for use with {@link Observable#compose(Function)}
      *
      * @param event the event that triggers unsubscription
-     * @return a reusable {@link Observable.Transformer} which unsubscribes when the event triggers.
+     * @return a reusable {@link io.reactivex.ObservableTransformer} which unsubscribes when the event triggers.
      */
     @Nonnull
     @CheckReturnValue
@@ -34,9 +35,9 @@ public interface LifecycleProvider<E> {
     /**
      * Binds a source until the next reasonable event occurs.
      * <p>
-     * Intended for use with {@link Observable#compose(Observable.Transformer)}
+     * Intended for use with {@link Observable#compose(Function)}
      *
-     * @return a reusable {@link Observable.Transformer} which unsubscribes at the correct time.
+     * @return a reusable {@link io.reactivex.ObservableTransformer} which unsubscribes at the correct time.
      */
     @Nonnull
     @CheckReturnValue

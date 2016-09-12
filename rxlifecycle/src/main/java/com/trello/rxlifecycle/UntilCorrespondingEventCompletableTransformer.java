@@ -1,10 +1,12 @@
 package com.trello.rxlifecycle;
 
-import rx.Completable;
-import rx.Observable;
-import rx.functions.Func1;
-
 import javax.annotation.Nonnull;
+
+import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
+import io.reactivex.CompletableTransformer;
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
 
 import static com.trello.rxlifecycle.TakeUntilGenerator.takeUntilCorrespondingEvent;
 
@@ -14,24 +16,24 @@ import static com.trello.rxlifecycle.TakeUntilGenerator.takeUntilCorrespondingEv
  * That lifecycle event is determined based on what stage we're at in
  * the current lifecycle.
  */
-final class UntilCorrespondingEventCompletableTransformer<T> implements Completable.CompletableTransformer {
+final class UntilCorrespondingEventCompletableTransformer<T> implements CompletableTransformer {
 
     final Observable<T> sharedLifecycle;
-    final Func1<T, T> correspondingEvents;
+    final Function<T, T> correspondingEvents;
 
     public UntilCorrespondingEventCompletableTransformer(@Nonnull Observable<T> sharedLifecycle,
-                                                         @Nonnull Func1<T, T> correspondingEvents) {
+                                                         @Nonnull Function<T, T> correspondingEvents) {
         this.sharedLifecycle = sharedLifecycle;
         this.correspondingEvents = correspondingEvents;
     }
 
     @Override
-    public Completable call(Completable source) {
-        return Completable.amb(
-            source,
-            takeUntilCorrespondingEvent(sharedLifecycle, correspondingEvents)
-                .flatMap(Functions.CANCEL_COMPLETABLE)
-                .toCompletable()
+    public CompletableSource apply(Completable completable) throws Exception {
+        return Completable.ambArray(
+                completable,
+                takeUntilCorrespondingEvent(sharedLifecycle, correspondingEvents)
+                        .flatMap(Functions.CANCEL_COMPLETABLE)
+                        .toCompletable()
         );
     }
 

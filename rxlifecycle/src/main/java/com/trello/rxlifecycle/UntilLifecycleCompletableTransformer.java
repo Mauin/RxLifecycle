@@ -1,14 +1,15 @@
 package com.trello.rxlifecycle;
 
-import rx.Completable;
-import rx.Observable;
-
 import javax.annotation.Nonnull;
+
+import io.reactivex.Completable;
+import io.reactivex.CompletableTransformer;
+import io.reactivex.Observable;
 
 /**
  * Continues a subscription until it sees *any* lifecycle event.
  */
-final class UntilLifecycleCompletableTransformer<T> implements Completable.CompletableTransformer {
+final class UntilLifecycleCompletableTransformer<T> implements CompletableTransformer {
 
     final Observable<T> lifecycle;
 
@@ -17,8 +18,8 @@ final class UntilLifecycleCompletableTransformer<T> implements Completable.Compl
     }
 
     @Override
-    public Completable call(Completable source) {
-        return Completable.amb(
+    public Completable apply(Completable source) throws Exception{
+        return Completable.ambArray(
             source,
             lifecycle
                 .flatMap(Functions.CANCEL_COMPLETABLE)

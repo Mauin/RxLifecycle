@@ -1,10 +1,12 @@
 package com.trello.rxlifecycle;
 
-import rx.Observable;
-import rx.Single;
-import rx.functions.Func1;
-
 import javax.annotation.Nonnull;
+
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.SingleSource;
+import io.reactivex.SingleTransformer;
+import io.reactivex.functions.Function;
 
 import static com.trello.rxlifecycle.TakeUntilGenerator.takeUntilCorrespondingEvent;
 
@@ -14,20 +16,20 @@ import static com.trello.rxlifecycle.TakeUntilGenerator.takeUntilCorrespondingEv
  * That lifecycle event is determined based on what stage we're at in
  * the current lifecycle.
  */
-final class UntilCorrespondingEventSingleTransformer<T, R> implements Single.Transformer<T, T> {
+final class UntilCorrespondingEventSingleTransformer<T, R> implements SingleTransformer<T, T> {
 
     final Observable<R> sharedLifecycle;
-    final Func1<R, R> correspondingEvents;
+    final Function<R, R> correspondingEvents;
 
     public UntilCorrespondingEventSingleTransformer(@Nonnull Observable<R> sharedLifecycle,
-                                                    @Nonnull Func1<R, R> correspondingEvents) {
+                                                    @Nonnull Function<R, R> correspondingEvents) {
         this.sharedLifecycle = sharedLifecycle;
         this.correspondingEvents = correspondingEvents;
     }
 
     @Override
-    public Single<T> call(Single<T> source) {
-        return source.takeUntil(takeUntilCorrespondingEvent(sharedLifecycle, correspondingEvents));
+    public SingleSource<T> apply(Single<T> source) throws Exception {
+        return source.toObservable().takeUntil(takeUntilCorrespondingEvent(sharedLifecycle, correspondingEvents)).toSingle();
     }
 
     @Override

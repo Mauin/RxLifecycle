@@ -1,10 +1,12 @@
 package com.trello.rxlifecycle;
 
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 import javax.annotation.Nonnull;
+
+import io.reactivex.CompletableTransformer;
+import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.SingleTransformer;
 
 import static com.trello.rxlifecycle.TakeUntilGenerator.takeUntilEvent;
 
@@ -22,19 +24,19 @@ final class UntilEventObservableTransformer<T, R> implements LifecycleTransforme
     }
 
     @Override
-    public Observable<T> call(Observable<T> source) {
+    public ObservableSource<T> apply(Observable<T> source) throws Exception {
         return source.takeUntil(takeUntilEvent(lifecycle, event));
     }
 
     @Nonnull
     @Override
-    public Single.Transformer<T, T> forSingle() {
+    public SingleTransformer<T, T> forSingle() {
         return new UntilEventSingleTransformer<>(lifecycle, event);
     }
 
     @Nonnull
     @Override
-    public Completable.CompletableTransformer forCompletable() {
+    public CompletableTransformer forCompletable() {
         return new UntilEventCompletableTransformer<>(lifecycle, event);
     }
 

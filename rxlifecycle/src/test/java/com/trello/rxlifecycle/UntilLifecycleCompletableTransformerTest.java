@@ -2,11 +2,12 @@ package com.trello.rxlifecycle;
 
 import org.junit.Before;
 import org.junit.Test;
-import rx.Completable;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
 
 import java.util.concurrent.CancellationException;
+
+import io.reactivex.Completable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subscribers.TestSubscriber;
 
 public class UntilLifecycleCompletableTransformerTest {
 
@@ -17,7 +18,7 @@ public class UntilLifecycleCompletableTransformerTest {
 
     @Before
     public void setup() {
-        subject =  PublishSubject.create();
+        subject = PublishSubject.create();
         completable = Completable.fromObservable(subject);
         lifecycle = PublishSubject.create();
         testSubscriber = new TestSubscriber<>();
@@ -25,23 +26,23 @@ public class UntilLifecycleCompletableTransformerTest {
 
     @Test
     public void noEvent() {
-        completable
-            .compose(new UntilLifecycleCompletableTransformer<>(lifecycle))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) completable
+                .compose(new UntilLifecycleCompletableTransformer<>(lifecycle))
+                .subscribe();
 
-        subject.onCompleted();
+        subject.onComplete();
 
-        testSubscriber.assertCompleted();
+        testSubscriber.assertComplete();
     }
 
     @Test
     public void oneEvent() {
-        completable
-            .compose(new UntilLifecycleCompletableTransformer<>(lifecycle))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) completable
+                .compose(new UntilLifecycleCompletableTransformer<>(lifecycle))
+                .subscribe();
 
         lifecycle.onNext("stop");
-        subject.onCompleted();
+        subject.onComplete();
 
         testSubscriber.assertError(CancellationException.class);
     }

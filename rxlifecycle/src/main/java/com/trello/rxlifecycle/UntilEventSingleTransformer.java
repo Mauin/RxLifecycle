@@ -1,16 +1,18 @@
 package com.trello.rxlifecycle;
 
-import rx.Observable;
-import rx.Single;
-
 import javax.annotation.Nonnull;
+
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.SingleSource;
+import io.reactivex.SingleTransformer;
 
 import static com.trello.rxlifecycle.TakeUntilGenerator.takeUntilEvent;
 
 /**
  * Continues a subscription until it sees a particular lifecycle event.
  */
-final class UntilEventSingleTransformer<T, R> implements Single.Transformer<T, T> {
+final class UntilEventSingleTransformer<T, R> implements SingleTransformer<T, T> {
 
     final Observable<R> lifecycle;
     final R event;
@@ -21,8 +23,8 @@ final class UntilEventSingleTransformer<T, R> implements Single.Transformer<T, T
     }
 
     @Override
-    public Single<T> call(Single<T> source) {
-        return source.takeUntil(takeUntilEvent(lifecycle, event));
+    public SingleSource<T> apply(Single<T> source) throws Exception {
+        return source.toObservable().takeUntil(takeUntilEvent(lifecycle, event)).toSingle();
     }
 
     @Override

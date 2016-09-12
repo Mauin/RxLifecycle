@@ -16,10 +16,11 @@ package com.trello.rxlifecycle;
 
 import org.junit.Before;
 import org.junit.Test;
-import rx.Observable;
-import rx.Subscription;
-import rx.subjects.BehaviorSubject;
-import rx.subjects.PublishSubject;
+
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -31,26 +32,26 @@ public class RxLifecycleTest {
     @Before
     public void setup() {
         // Simulate an actual lifecycle (hot Observable that does not end)
-        observable = PublishSubject.create().asObservable();
+        observable = PublishSubject.create();
     }
 
     @Test
     public void testBindLifecycle() {
         BehaviorSubject<Object> lifecycle = BehaviorSubject.create();
-        Subscription attachSub = observable.compose(RxLifecycle.bind(lifecycle)).subscribe();
-        assertFalse(attachSub.isUnsubscribed());
+        Disposable attachSub = observable.compose(RxLifecycle.bind(lifecycle)).subscribe();
+        assertFalse(attachSub.isDisposed());
         lifecycle.onNext(new Object());
-        assertTrue(attachSub.isUnsubscribed());
+        assertTrue(attachSub.isDisposed());
     }
 
     @Test
     public void testBindLifecycleOtherObject() {
         // Ensures it works with other types as well, and not just "Object"
         BehaviorSubject<String> lifecycle = BehaviorSubject.create();
-        Subscription attachSub = observable.compose(RxLifecycle.bind(lifecycle)).subscribe();
-        assertFalse(attachSub.isUnsubscribed());
+        Disposable attachSub = observable.compose(RxLifecycle.bind(lifecycle)).subscribe();
+        assertFalse(attachSub.isDisposed());
         lifecycle.onNext("");
-        assertTrue(attachSub.isUnsubscribed());
+        assertTrue(attachSub.isDisposed());
     }
 
     // Null checks

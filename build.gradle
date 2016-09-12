@@ -33,7 +33,8 @@ ext {
     targetCompatibilityVersion = JavaVersion.VERSION_1_7
 
     // Define all dependencies in the base project, to unify & make it easy to update
-    rxJava = 'io.reactivex:rxjava:1.1.9'
+    rxJava = 'io.reactivex.rxjava2:rxjava:2.0.0-RC1'
+    rxJava2Interop = "com.github.akarnokd:rxjava2-interop:0.1.2"
     rxBinding = 'com.jakewharton.rxbinding:rxbinding:0.4.0'
     navi = 'com.trello:navi:0.2.2'
     kotlinStdlib = "org.jetbrains.kotlin:kotlin-stdlib:$verKotlin"

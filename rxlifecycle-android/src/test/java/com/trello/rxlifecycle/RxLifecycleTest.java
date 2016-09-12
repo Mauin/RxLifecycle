@@ -2,9 +2,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,22 +16,25 @@ package com.trello.rxlifecycle;
 
 import android.app.Activity;
 import android.view.View;
+
 import com.trello.rxlifecycle.android.ActivityEvent;
 import com.trello.rxlifecycle.android.FragmentEvent;
 import com.trello.rxlifecycle.android.RxLifecycleAndroid;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
-import rx.Observable;
-import rx.Subscription;
-import rx.observers.TestSubscriber;
-import rx.subjects.BehaviorSubject;
-import rx.subjects.PublishSubject;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subscribers.TestSubscriber;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -46,55 +49,53 @@ public class RxLifecycleTest {
     @Before
     public void setup() {
         // Simulate an actual lifecycle (hot Observable that does not end)
-        observable = PublishSubject.create().asObservable();
+        observable = PublishSubject.create();
     }
 
     @Test
     public void testBindUntilFragmentEvent() {
-        BehaviorSubject<com.trello.rxlifecycle.android.FragmentEvent> lifecycle = BehaviorSubject.create();
-        TestSubscriber<Object> testSubscriber = new TestSubscriber<>();
+        BehaviorSubject<FragmentEvent> lifecycle = BehaviorSubject.create();
 
-        observable.compose(
-            RxLifecycle.bindUntilEvent(lifecycle, FragmentEvent.STOP))
-            .subscribe(testSubscriber);
+        TestObserver testObserver = observable.compose(
+                RxLifecycle.bindUntilEvent(lifecycle, FragmentEvent.STOP))
+                .test();
 
         lifecycle.onNext(FragmentEvent.ATTACH);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(FragmentEvent.CREATE);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(FragmentEvent.CREATE_VIEW);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(FragmentEvent.START);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(FragmentEvent.RESUME);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(FragmentEvent.PAUSE);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(FragmentEvent.STOP);
-        testSubscriber.assertCompleted();
-        testSubscriber.assertUnsubscribed();
+        testObserver.assertComplete();
+        assertTrue(testObserver.isDisposed());
     }
 
     @Test
     public void testBindUntilActivityEvent() {
         BehaviorSubject<ActivityEvent> lifecycle = BehaviorSubject.create();
-        TestSubscriber<Object> testSubscriber = new TestSubscriber<>();
 
-        observable.compose(
-            RxLifecycle.bindUntilEvent(lifecycle, ActivityEvent.STOP))
-            .subscribe(testSubscriber);
+        TestObserver testObserver = observable.compose(
+                RxLifecycle.bindUntilEvent(lifecycle, ActivityEvent.STOP))
+                .test();
 
         lifecycle.onNext(ActivityEvent.CREATE);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(ActivityEvent.START);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(ActivityEvent.RESUME);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(ActivityEvent.PAUSE);
-        assertFalse(testSubscriber.isUnsubscribed());
+        assertFalse(testObserver.isDisposed());
         lifecycle.onNext(ActivityEvent.STOP);
-        testSubscriber.assertCompleted();
-        testSubscriber.assertUnsubscribed();
+        testObserver.assertComplete();
+        assertTrue(testObserver.isDisposed());
     }
 
     @Test
@@ -291,51 +292,51 @@ public class RxLifecycleTest {
 
     // Null checks
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testBindUntilFragmentEventThrowsOnNullLifecycle() {
         //noinspection ResourceType
         RxLifecycle.bindUntilEvent(null, FragmentEvent.CREATE);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testBindUntilFragmentEventThrowsOnNullEvent() {
         BehaviorSubject<FragmentEvent> lifecycle = BehaviorSubject.create();
         //noinspection ResourceType
         RxLifecycle.bindUntilEvent(lifecycle, null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testBindFragmentThrowsOnNull() {
         //noinspection ResourceType
         RxLifecycleAndroid.bindFragment(null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testBindUntilActivityThrowsOnNullLifecycle() {
         //noinspection ResourceType
         RxLifecycle.bindUntilEvent(null, ActivityEvent.CREATE);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testBindUntilActivityEventThrowsOnNullEvent() {
         BehaviorSubject<ActivityEvent> lifecycle = BehaviorSubject.create();
         //noinspection ResourceType
         RxLifecycle.bindUntilEvent(lifecycle, null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testBindActivityThrowsOnNull() {
         //noinspection ResourceType
         RxLifecycleAndroid.bindActivity(null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testBindViewThrowsOnNullView() {
         //noinspection ResourceType
         RxLifecycleAndroid.bindView((View) null);
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected = NullPointerException.class)
     public void testBindThrowsOnNullLifecycle() {
         //noinspection ResourceType
         RxLifecycle.bind((Observable) null);

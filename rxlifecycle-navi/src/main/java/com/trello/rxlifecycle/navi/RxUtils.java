@@ -1,19 +1,19 @@
 package com.trello.rxlifecycle.navi;
 
-import rx.functions.Func1;
+import io.reactivex.functions.Predicate;
 
 final class RxUtils {
 
-    static <T> Func1<T, Boolean> notNull() {
-        return new Func1<T, Boolean>() {
+    private RxUtils() {
+        throw new AssertionError("No instances!");
+    }
+
+    static <T> Predicate<T> notNull() {
+        return new Predicate<T>() {
             @Override
-            public Boolean call(T t) {
+            public boolean test(T t) throws Exception {
                 return t != null;
             }
         };
-    }
-
-    private RxUtils() {
-        throw new AssertionError("No instances!");
     }
 }

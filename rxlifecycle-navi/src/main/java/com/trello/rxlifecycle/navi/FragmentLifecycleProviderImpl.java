@@ -2,6 +2,7 @@ package com.trello.rxlifecycle.navi;
 
 import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
+
 import com.trello.navi.Event;
 import com.trello.navi.NaviComponent;
 import com.trello.navi.rx.RxNavi;
@@ -10,8 +11,10 @@ import com.trello.rxlifecycle.LifecycleTransformer;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.android.FragmentEvent;
 import com.trello.rxlifecycle.android.RxLifecycleAndroid;
-import rx.Observable;
-import rx.subjects.BehaviorSubject;
+
+import hu.akarnokd.rxjava.interop.RxJavaInterop;
+import io.reactivex.Observable;
+import io.reactivex.subjects.BehaviorSubject;
 
 final class FragmentLifecycleProviderImpl implements LifecycleProvider<FragmentEvent> {
     private final BehaviorSubject<FragmentEvent> lifecycleSubject = BehaviorSubject.create();
@@ -22,7 +25,7 @@ final class FragmentLifecycleProviderImpl implements LifecycleProvider<FragmentE
             throw new IllegalArgumentException("NaviComponent does not handle all required events");
         }
 
-        RxNavi.observe(fragment, Event.ALL)
+        RxJavaInterop.toV2Observable(RxNavi.observe(fragment, Event.ALL))
             .map(NaviLifecycleMaps.FRAGMENT_EVENT_MAP)
             .filter(RxUtils.notNull())
             .subscribe(lifecycleSubject);
@@ -32,7 +35,7 @@ final class FragmentLifecycleProviderImpl implements LifecycleProvider<FragmentE
     @NonNull
     @CheckResult
     public Observable<FragmentEvent> lifecycle() {
-        return lifecycleSubject.asObservable();
+        return lifecycleSubject;
     }
 
     @Override

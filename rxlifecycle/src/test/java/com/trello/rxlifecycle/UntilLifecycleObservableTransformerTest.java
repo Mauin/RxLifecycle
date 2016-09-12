@@ -2,9 +2,10 @@ package com.trello.rxlifecycle;
 
 import org.junit.Before;
 import org.junit.Test;
-import rx.Observable;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
+
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subscribers.TestSubscriber;
 
 public class UntilLifecycleObservableTransformerTest {
 
@@ -19,26 +20,26 @@ public class UntilLifecycleObservableTransformerTest {
 
     @Test
     public void noEvent() {
-        Observable.just("1", "2", "3")
+        testSubscriber= (TestSubscriber<String>) Observable.just("1", "2", "3")
             .compose(new UntilLifecycleObservableTransformer<String, String>(lifecycle))
-            .subscribe(testSubscriber);
+            .subscribe();
 
-        testSubscriber.requestMore(2);
+        testSubscriber.request(2);
         testSubscriber.assertValues("1", "2");
-        testSubscriber.assertNoTerminalEvent();
+        testSubscriber.assertNotTerminated();
     }
 
     @Test
     public void oneEvent() {
-        Observable.just("1", "2", "3")
+        testSubscriber= (TestSubscriber<String>) Observable.just("1", "2", "3")
             .compose(new UntilLifecycleObservableTransformer<String, String>(lifecycle))
-            .subscribe(testSubscriber);
+            .subscribe();
 
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
         lifecycle.onNext("stop");
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
 
         testSubscriber.assertValues("1");
-        testSubscriber.assertCompleted();
+        testSubscriber.assertComplete();
     }
 }

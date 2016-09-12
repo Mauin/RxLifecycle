@@ -1,10 +1,11 @@
 package com.trello.rxlifecycle;
 
 import org.junit.Test;
-import rx.Observable;
-import rx.functions.Func1;
 
-import static org.junit.Assert.*;
+import io.reactivex.Observable;
+import io.reactivex.functions.Function;
+
+import static org.junit.Assert.assertEquals;
 
 public class LifecycleTransformerTest {
 
@@ -76,9 +77,9 @@ public class LifecycleTransformerTest {
         assertEquals(completableTransformer, observableTransformer.forCompletable());
     }
 
-    private static final Func1<String, String> CORRESPONDING_EVENTS = new Func1<String, String>() {
+    private static final Function<String, String> CORRESPONDING_EVENTS = new Function<String, String>() {
         @Override
-        public String call(String s) {
+        public String apply(String s) throws Exception {
             if (s.equals("create")) {
                 return "destroy";
             }

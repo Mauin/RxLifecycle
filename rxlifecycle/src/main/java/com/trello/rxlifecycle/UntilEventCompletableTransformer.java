@@ -1,16 +1,19 @@
 package com.trello.rxlifecycle;
 
-import rx.Completable;
-import rx.Observable;
 
 import javax.annotation.Nonnull;
+
+import io.reactivex.Completable;
+import io.reactivex.CompletableSource;
+import io.reactivex.CompletableTransformer;
+import io.reactivex.Observable;
 
 import static com.trello.rxlifecycle.TakeUntilGenerator.takeUntilEvent;
 
 /**
  * Continues a subscription until it sees a particular lifecycle event.
  */
-final class UntilEventCompletableTransformer<T> implements Completable.CompletableTransformer {
+final class UntilEventCompletableTransformer<T> implements CompletableTransformer {
 
     final Observable<T> lifecycle;
     final T event;
@@ -21,23 +24,29 @@ final class UntilEventCompletableTransformer<T> implements Completable.Completab
     }
 
     @Override
-    public Completable call(Completable source) {
-        return Completable.amb(
-            source,
-            takeUntilEvent(lifecycle, event)
-                .flatMap(Functions.CANCEL_COMPLETABLE)
-                .toCompletable()
+    public CompletableSource apply(Completable source) throws Exception {
+        return Completable.ambArray(
+                source,
+                takeUntilEvent(lifecycle, event)
+                        .flatMap(Functions.CANCEL_COMPLETABLE)
+                        .toCompletable()
         );
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         UntilEventCompletableTransformer<?> that = (UntilEventCompletableTransformer<?>) o;
 
-        if (!lifecycle.equals(that.lifecycle)) { return false; }
+        if (!lifecycle.equals(that.lifecycle)) {
+            return false;
+        }
         return event.equals(that.event);
     }
 

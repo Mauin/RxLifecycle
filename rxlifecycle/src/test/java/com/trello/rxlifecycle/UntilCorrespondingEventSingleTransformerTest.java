@@ -2,15 +2,28 @@ package com.trello.rxlifecycle;
 
 import org.junit.Before;
 import org.junit.Test;
-import rx.Single;
-import rx.functions.Func1;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
 
 import java.util.concurrent.CancellationException;
 
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subscribers.TestSubscriber;
+
 public class UntilCorrespondingEventSingleTransformerTest {
 
+    private static final Function<String, String> CORRESPONDING_EVENTS = new Function<String, String>() {
+        @Override
+        public String apply(String s) throws Exception {
+            if (s.equals("create")) {
+                return "destroy";
+            }
+
+            throw new IllegalArgumentException("Cannot handle: " + s);
+        }
+    };
     PublishSubject<String> lifecycle;
     TestSubscriber<String> testSubscriber;
 
@@ -23,60 +36,49 @@ public class UntilCorrespondingEventSingleTransformerTest {
     @Test
     public void noEvents() {
         Single.just("1")
-            .compose(new UntilCorrespondingEventSingleTransformer<String, String>(lifecycle, CORRESPONDING_EVENTS))
-            .subscribe(testSubscriber);
+                .compose(new UntilCorrespondingEventSingleTransformer<String, String>(lifecycle, CORRESPONDING_EVENTS))
+                .subscribe();
 
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
         testSubscriber.assertValue("1");
-        testSubscriber.assertCompleted();
+        testSubscriber.assertComplete();
     }
 
     @Test
     public void oneStartEvent() {
-        Single.just("1")
-            .compose(new UntilCorrespondingEventSingleTransformer<String, String>(lifecycle, CORRESPONDING_EVENTS))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) Single.just("1")
+                .compose(new UntilCorrespondingEventSingleTransformer<String, String>(lifecycle, CORRESPONDING_EVENTS))
+                .subscribe();
 
         lifecycle.onNext("create");
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
         testSubscriber.assertValue("1");
-        testSubscriber.assertCompleted();
+        testSubscriber.assertComplete();
     }
 
     @Test
     public void twoOpenEvents() {
-        Single.just("1")
-            .compose(new UntilCorrespondingEventSingleTransformer<String, String>(lifecycle, CORRESPONDING_EVENTS))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) Single.just("1")
+                .compose(new UntilCorrespondingEventSingleTransformer<String, String>(lifecycle, CORRESPONDING_EVENTS))
+                .subscribe();
 
         lifecycle.onNext("create");
         lifecycle.onNext("start");
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
         testSubscriber.assertValue("1");
-        testSubscriber.assertCompleted();
+        testSubscriber.assertComplete();
     }
 
     @Test
     public void openAndCloseEvent() {
-        Single.just("1")
-            .compose(new UntilCorrespondingEventSingleTransformer<String, String>(lifecycle, CORRESPONDING_EVENTS))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) Single.just("1")
+                .compose(new UntilCorrespondingEventSingleTransformer<String, String>(lifecycle, CORRESPONDING_EVENTS))
+                .subscribe();
 
         lifecycle.onNext("create");
         lifecycle.onNext("destroy");
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
         testSubscriber.assertNoValues();
         testSubscriber.assertError(CancellationException.class);
     }
-
-    private static final Func1<String, String> CORRESPONDING_EVENTS = new Func1<String, String>() {
-        @Override
-        public String call(String s) {
-            if (s.equals("create")) {
-                return "destroy";
-            }
-
-            throw new IllegalArgumentException("Cannot handle: " + s);
-        }
-    };
 }

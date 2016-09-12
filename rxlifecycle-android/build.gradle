@@ -18,6 +18,7 @@ dependencies {
     compile project(':rxlifecycle')
 
     compile rootProject.ext.rxBinding
+    compile rootProject.ext.rxJava2Interop
 
     testCompile rootProject.ext.junit
     testCompile rootProject.ext.robolectric

@@ -2,9 +2,10 @@ package com.trello.rxlifecycle;
 
 import org.junit.Before;
 import org.junit.Test;
-import rx.Observable;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
+
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subscribers.TestSubscriber;
 
 public class UntilEventObservableTransformerTest {
 
@@ -19,43 +20,43 @@ public class UntilEventObservableTransformerTest {
 
     @Test
     public void noEvents() {
-        Observable.just("1", "2", "3")
-            .compose(new UntilEventObservableTransformer<String, String>(lifecycle, "stop"))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) Observable.just("1", "2", "3")
+                .compose(new UntilEventObservableTransformer<String, String>(lifecycle, "stop"))
+                .subscribe();
 
-        testSubscriber.requestMore(2);
+        testSubscriber.request(2);
         testSubscriber.assertValues("1", "2");
-        testSubscriber.assertNoTerminalEvent();
+        testSubscriber.assertNotTerminated();
     }
 
     @Test
     public void oneWrongEvent() {
-        Observable.just("1", "2", "3")
-            .compose(new UntilEventObservableTransformer<String, String>(lifecycle, "stop"))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) Observable.just("1", "2", "3")
+                .compose(new UntilEventObservableTransformer<String, String>(lifecycle, "stop"))
+                .subscribe();
 
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
         lifecycle.onNext("keep going");
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
 
         testSubscriber.assertValues("1", "2");
-        testSubscriber.assertNoTerminalEvent();
+        testSubscriber.assertNotTerminated();
     }
 
     @Test
     public void twoEvents() {
-        Observable.just("1", "2", "3")
-            .compose(new UntilEventObservableTransformer<String, String>(lifecycle, "stop"))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) Observable.just("1", "2", "3")
+                .compose(new UntilEventObservableTransformer<String, String>(lifecycle, "stop"))
+                .subscribe();
 
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
         lifecycle.onNext("keep going");
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
         lifecycle.onNext("stop");
-        testSubscriber.requestMore(1);
+        testSubscriber.request(1);
 
         testSubscriber.assertValues("1", "2");
-        testSubscriber.assertCompleted();
+        testSubscriber.assertComplete();
     }
 
 }

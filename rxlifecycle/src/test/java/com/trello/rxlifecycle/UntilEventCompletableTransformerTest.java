@@ -2,11 +2,12 @@ package com.trello.rxlifecycle;
 
 import org.junit.Before;
 import org.junit.Test;
-import rx.Completable;
-import rx.observers.TestSubscriber;
-import rx.subjects.PublishSubject;
 
 import java.util.concurrent.CancellationException;
+
+import io.reactivex.Completable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subscribers.TestSubscriber;
 
 public class UntilEventCompletableTransformerTest {
 
@@ -17,7 +18,7 @@ public class UntilEventCompletableTransformerTest {
 
     @Before
     public void setup() {
-        subject =  PublishSubject.create();
+        subject = PublishSubject.create();
         completable = Completable.fromObservable(subject);
         lifecycle = PublishSubject.create();
         testSubscriber = new TestSubscriber<>();
@@ -25,34 +26,34 @@ public class UntilEventCompletableTransformerTest {
 
     @Test
     public void noEvents() {
-        completable
-            .compose(new UntilEventCompletableTransformer<>(lifecycle, "stop"))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) completable
+                .compose(new UntilEventCompletableTransformer<>(lifecycle, "stop"))
+                .subscribe();
 
-        subject.onCompleted();
-        testSubscriber.assertCompleted();
+        subject.onComplete();
+        testSubscriber.assertComplete();
     }
 
     @Test
     public void oneWrongEvent() {
-        completable
-            .compose(new UntilEventCompletableTransformer<>(lifecycle, "stop"))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) completable
+                .compose(new UntilEventCompletableTransformer<>(lifecycle, "stop"))
+                .subscribe();
 
         lifecycle.onNext("keep going");
-        subject.onCompleted();
-        testSubscriber.assertCompleted();
+        subject.onComplete();
+        testSubscriber.assertComplete();
     }
 
     @Test
     public void twoEvents() {
-        completable
-            .compose(new UntilEventCompletableTransformer<>(lifecycle, "stop"))
-            .subscribe(testSubscriber);
+        testSubscriber = (TestSubscriber<String>) completable
+                .compose(new UntilEventCompletableTransformer<>(lifecycle, "stop"))
+                .subscribe();
 
         lifecycle.onNext("keep going");
         lifecycle.onNext("stop");
-        subject.onCompleted();
+        subject.onComplete();
         testSubscriber.assertError(CancellationException.class);
     }
 

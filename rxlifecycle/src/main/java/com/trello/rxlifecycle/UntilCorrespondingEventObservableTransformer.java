@@ -1,11 +1,11 @@
 package com.trello.rxlifecycle;
 
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
-import rx.functions.Func1;
-
 import javax.annotation.Nonnull;
+
+import io.reactivex.CompletableTransformer;
+import io.reactivex.Observable;
+import io.reactivex.SingleTransformer;
+import io.reactivex.functions.Function;
 
 import static com.trello.rxlifecycle.TakeUntilGenerator.takeUntilCorrespondingEvent;
 
@@ -18,28 +18,28 @@ import static com.trello.rxlifecycle.TakeUntilGenerator.takeUntilCorrespondingEv
 final class UntilCorrespondingEventObservableTransformer<T, R> implements LifecycleTransformer<T> {
 
     final Observable<R> sharedLifecycle;
-    final Func1<R, R> correspondingEvents;
+    final Function<R, R> correspondingEvents;
 
     public UntilCorrespondingEventObservableTransformer(@Nonnull Observable<R> sharedLifecycle,
-                                                        @Nonnull Func1<R, R> correspondingEvents) {
+                                                        @Nonnull Function<R, R> correspondingEvents) {
         this.sharedLifecycle = sharedLifecycle;
         this.correspondingEvents = correspondingEvents;
     }
 
     @Override
-    public Observable<T> call(Observable<T> source) {
+    public Observable<T> apply(Observable<T> source) throws Exception {
         return source.takeUntil(takeUntilCorrespondingEvent(sharedLifecycle, correspondingEvents));
     }
 
     @Nonnull
     @Override
-    public Single.Transformer<T, T> forSingle() {
+    public SingleTransformer<T, T> forSingle() {
         return new UntilCorrespondingEventSingleTransformer<>(sharedLifecycle, correspondingEvents);
     }
 
     @Nonnull
     @Override
-    public Completable.CompletableTransformer forCompletable() {
+    public CompletableTransformer forCompletable() {
         return new UntilCorrespondingEventCompletableTransformer<>(sharedLifecycle, correspondingEvents);
     }
 

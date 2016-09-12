@@ -6,13 +6,15 @@ import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+
 import com.trello.rxlifecycle.LifecycleProvider;
 import com.trello.rxlifecycle.LifecycleTransformer;
 import com.trello.rxlifecycle.RxLifecycle;
 import com.trello.rxlifecycle.android.ActivityEvent;
 import com.trello.rxlifecycle.android.RxLifecycleAndroid;
-import rx.Observable;
-import rx.subjects.BehaviorSubject;
+
+import io.reactivex.Observable;
+import io.reactivex.subjects.BehaviorSubject;
 
 public class RxAppCompatActivity extends AppCompatActivity implements LifecycleProvider<ActivityEvent> {
 
@@ -22,7 +24,7 @@ public class RxAppCompatActivity extends AppCompatActivity implements LifecycleP
     @NonNull
     @CheckResult
     public final Observable<ActivityEvent> lifecycle() {
-        return lifecycleSubject.asObservable();
+        return lifecycleSubject;
     }
 
     @Override

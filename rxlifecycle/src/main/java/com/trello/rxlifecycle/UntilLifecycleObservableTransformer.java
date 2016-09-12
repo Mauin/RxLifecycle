@@ -1,10 +1,11 @@
 package com.trello.rxlifecycle;
 
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
-
 import javax.annotation.Nonnull;
+
+import io.reactivex.CompletableTransformer;
+import io.reactivex.Flowable;
+import io.reactivex.Observable;
+import io.reactivex.SingleTransformer;
 
 /**
  * Continues a subscription until it sees *any* lifecycle event.
@@ -18,26 +19,30 @@ final class UntilLifecycleObservableTransformer<T, R> implements LifecycleTransf
     }
 
     @Override
-    public Observable<T> call(Observable<T> source) {
+    public Observable<T> apply(Observable<T> source) throws Exception {
         return source.takeUntil(lifecycle);
     }
 
     @Nonnull
     @Override
-    public Single.Transformer<T, T> forSingle() {
+    public SingleTransformer<T, T> forSingle() {
         return new UntilLifecycleSingleTransformer<>(lifecycle);
     }
 
     @Nonnull
     @Override
-    public Completable.CompletableTransformer forCompletable() {
+    public CompletableTransformer forCompletable() {
         return new UntilLifecycleCompletableTransformer<>(lifecycle);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { return true; }
-        if (o == null || getClass() != o.getClass()) { return false; }
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
 
         UntilLifecycleObservableTransformer<?, ?> that = (UntilLifecycleObservableTransformer<?, ?>) o;
 
@@ -52,7 +57,7 @@ final class UntilLifecycleObservableTransformer<T, R> implements LifecycleTransf
     @Override
     public String toString() {
         return "UntilLifecycleObservableTransformer{" +
-            "lifecycle=" + lifecycle +
-            '}';
+                "lifecycle=" + lifecycle +
+                '}';
     }
 }

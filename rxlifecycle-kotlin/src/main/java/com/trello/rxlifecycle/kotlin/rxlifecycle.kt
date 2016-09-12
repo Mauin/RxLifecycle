@@ -17,9 +17,9 @@ package com.trello.rxlifecycle.kotlin
 import android.view.View
 import com.trello.rxlifecycle.LifecycleProvider
 import com.trello.rxlifecycle.android.RxLifecycleAndroid
-import rx.Completable
-import rx.Observable
-import rx.Single
+import io.reactivex.Completable
+import io.reactivex.Observable
+import io.reactivex.Single
 
 fun <T, E> Observable<T>.bindToLifecycle(provider: LifecycleProvider<E>): Observable<T>
         = this.compose<T>(provider.bindToLifecycle<T>())
